@@ -85,4 +85,5 @@ targets:
     dependencies:
       - package: RadialTimer
         products:
+          - SettingsFeature
           - TimerFeature
