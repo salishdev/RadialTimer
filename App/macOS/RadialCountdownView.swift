@@ -1,8 +1,8 @@
 import SwiftUI
 
-struct Visual: View {
+struct RadialCountdownView: View {
     var color: Color = .green
-    
+
     var total: CGFloat = 100
     var remaining: CGFloat = 100
 
@@ -48,17 +48,17 @@ struct Visual: View {
 }
 
 #Preview("0.75 remaining") {
-    Visual(total: 60.0, remaining: 45.0)
+    RadialCountdownView(total: 60.0, remaining: 45.0)
 }
 
 #Preview("0.5 remaining") {
-    Visual(total: 60.0, remaining: 30.0)
+    RadialCountdownView(total: 60.0, remaining: 30.0)
 }
 
 #Preview("0.25 remaining") {
-    Visual(total: 60.0, remaining: 15.0)
+    RadialCountdownView(total: 60.0, remaining: 15.0)
 }
 
 #Preview("-0.25 remaining") {
-    Visual(total: 60.0, remaining: 85.0)
+    RadialCountdownView(total: 60.0, remaining: 85.0)
 }
