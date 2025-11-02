@@ -17,6 +17,7 @@ let package = Package(
       name: "TimerFeature",
       dependencies: [
         .product(name: "SwiftUIIntrospect", package: "swiftui-introspect"),
+        "SettingsFeature",
       ]
     ),
     .target(

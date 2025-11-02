@@ -80,14 +80,29 @@ public final class TimerViewModel {
   // MARK: - Sound Management
 
   private func loadSound() {
-    guard let url = Bundle.main.url(forResource: "Update.caf", withExtension: "") else {
-      print("Sound file not found")
+    // Check user's sound preference
+    let soundPreference = UserDefaults.standard.string(forKey: "selectedSound") ?? "Update"
+
+    // If sound is disabled, don't load any sound
+    if soundPreference == "None" {
+      soundPlayer = nil
+      return
+    }
+
+    // Load the appropriate sound file
+    let fileName = soundPreference == "Update" ? "Update.caf" : "Update.caf"
+    guard let url = Bundle.main.url(forResource: fileName, withExtension: "") else {
+      print("Sound file not found: \(fileName)")
       return
     }
     soundPlayer = AVPlayer(url: url)
   }
 
   private func playSound() {
+    // Reload sound in case preferences changed
+    loadSound()
+
+    // Play if sound is enabled
     soundPlayer?.seek(to: .zero)
     soundPlayer?.play()
   }
