@@ -1,5 +1,4 @@
 import Cocoa
-import ComposableArchitecture
 import SwiftUI
 import TimerFeature
 
@@ -9,15 +8,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     var statusItem: NSStatusItem!
     var isMuted: Bool = false
 
-    let store: StoreOf<TimerFeature.Timer> = Store(initialState: TimerFeature.Timer.State()) {
-        TimerFeature.Timer()
-    } withDependencies: {
-        $0.soundEffectClient.load(sound: .update)
-    }
+    let viewModel = TimerViewModel()
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         let contentView = NSHostingView(rootView: TimerFeature.MenuView(
-            store: store,
+            viewModel: viewModel,
             onClose: { [weak self] in
                 guard let self = self else { return }
                 self.statusItem.button?.performClick(nil)
@@ -28,7 +23,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // Status bar icon SwiftUI view & a hosting view.
         //
         let iconSwiftUI = ZStack {
-            CircularAnalogView(store: self.store)
+            CircularAnalogView(viewModel: self.viewModel)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                 .padding(.horizontal, 4)
         }
@@ -71,7 +66,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc func statusBarButtonClicked(sender: NSStatusBarButton) {
         let event = NSApp.currentEvent!
         if event.type == NSEvent.EventType.rightMouseUp {
-            store.send(.toggleTimerButtonTapped)
+            viewModel.toggleTimer()
         } else {
             statusItem.menu = statusBarMenu
             statusItem.button?.performClick(nil)

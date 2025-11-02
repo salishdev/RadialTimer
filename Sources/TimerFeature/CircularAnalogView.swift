@@ -1,12 +1,11 @@
-import ComposableArchitecture
 import SwiftUI
 
 public struct CircularAnalogView: View {
-    public init(store: StoreOf<Timer>) {
-        self.store = store
+    public init(viewModel: TimerViewModel) {
+        self.viewModel = viewModel
     }
-
-    public let store: StoreOf<Timer>
+ 
+    public let viewModel: TimerViewModel
 
     public var body: some View {
         Canvas(
@@ -31,7 +30,7 @@ public struct CircularAnalogView: View {
             }
 
             context.fill(bgPath, with: .color(
-                !store.isTimerExpired ? store.color.opacity(0.15) : Color.red.opacity(0.75)
+                !viewModel.isTimerExpired ? viewModel.color.opacity(0.15) : Color.red.opacity(0.75)
             ))
 
             let path = Path { p in
@@ -40,46 +39,30 @@ public struct CircularAnalogView: View {
                     center: .zero,
                     radius: radius,
                     startAngle: .zero,
-                    endAngle: Angle(degrees: 360) * CGFloat(store.timeRemaining) / CGFloat(store.duration),
+                    endAngle: Angle(degrees: 360) * CGFloat(viewModel.timeRemaining) / CGFloat(viewModel.duration),
                     clockwise: false
                 )
                 p.closeSubpath()
             }
 
-            context.fill(path, with: .color(store.color.opacity(0.75)))
+            context.fill(path, with: .color(viewModel.color.opacity(0.75)))
         }
     }
 }
 
 #Preview("") {
-    CircularAnalogView(
-        store: Store(initialState: Timer.State()) {
-            Timer()
-        }
-    )
+    CircularAnalogView(viewModel: TimerViewModel())
 }
 
 
 #Preview("15min remaining") {
-    CircularAnalogView(
-        store: Store(initialState: Timer.State(timeRemaining: 60 * 15)) {
-            Timer()
-        }
-    )
+    CircularAnalogView(viewModel: TimerViewModel(timeRemaining: 60 * 15))
 }
 
 #Preview("45min remaining") {
-    CircularAnalogView(
-        store: Store(initialState: Timer.State(timeRemaining: 60 * 45)) {
-            Timer()
-        }
-    )
+    CircularAnalogView(viewModel: TimerViewModel(timeRemaining: 60 * 45))
 }
 
 #Preview("Expired") {
-    CircularAnalogView(
-        store: Store(initialState: Timer.State(timeRemaining: 0, isTimerExpired: true)) {
-            Timer()
-        }
-    )
+    CircularAnalogView(viewModel: TimerViewModel(timeRemaining: 0, isTimerExpired: true))
 }

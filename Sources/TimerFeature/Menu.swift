@@ -1,4 +1,3 @@
-import ComposableArchitecture
 import SwiftUI
 import SwiftUIIntrospect
 
@@ -36,28 +35,28 @@ struct MenuButton: View {
 }
 
 public struct MenuView: View {
-    @Perception.Bindable public var store: StoreOf<Timer>
+    @Bindable public var viewModel: TimerViewModel
     public let onClose: () -> Void
 
-    public init(store: StoreOf<Timer>, onClose: @escaping () -> Void = {}) {
-        self.store = store
+    public init(viewModel: TimerViewModel, onClose: @escaping () -> Void = {}) {
+        self.viewModel = viewModel
         self.onClose = onClose
     }
 
     public var body: some View {
         VStack(spacing: 5) {
-            Text(store.formattedTimeRemaining)
+            Text(viewModel.formattedTimeRemaining)
                 .font(.system(size: 36, weight: .light, design: .monospaced))
                 .minimumScaleFactor(0.01)
 
             HStack(alignment: .center, spacing: 0) {
-                MenuButton(imageName: store.isTimerOn ? "pause.fill" : "play.fill") {
-                    store.send(.toggleTimerButtonTapped)
+                MenuButton(imageName: viewModel.isTimerOn ? "pause.fill" : "play.fill") {
+                    viewModel.toggleTimer()
                     onClose()
                 }
 
                 MenuButton(imageName: "arrow.counterclockwise") {
-                    store.send(.resetTimerButtonTapped)
+                    viewModel.resetTimer()
                     onClose()
                 }
 
@@ -68,7 +67,7 @@ public struct MenuView: View {
             .padding(.horizontal, 4)
 
             Slider(
-                value: $store.durationAsDouble.sending(\.durationChanged),
+                value: $viewModel.durationAsDouble,
                 in: 60 * 5 ... 60 * 60 * 2,
                 step: 60 * 5
             )
@@ -83,9 +82,5 @@ public struct MenuView: View {
 }
 
 #Preview("") {
-    MenuView(
-        store: Store(initialState: Timer.State()) {
-            Timer()
-        }
-    )
+    MenuView(viewModel: TimerViewModel())
 }

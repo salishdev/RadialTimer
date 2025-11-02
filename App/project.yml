@@ -3,7 +3,7 @@ options:
   bundleIdPrefix: software.astere
   indentWidth: 4
   tabWidth: 4
-  localPackagesGroup: ''
+  localPackagesGroup: ""
 
 configs:
   Local Debug: debug
@@ -39,9 +39,9 @@ targetTemplates:
       properties:
         CFBundleName: RadialTimer
         CFBundleDisplayName: RadialTimer
-        CFBundleShortVersionString: '0.1'
-        CFBundleVersion: '0'
-        LSMinimumSystemVersion: '13.0'
+        CFBundleShortVersionString: "0.1"
+        CFBundleVersion: "0"
+        LSMinimumSystemVersion: "14.0"
 
   Configuration:
     info:
@@ -57,7 +57,7 @@ targets:
       - Configuration
     type: application
     platform: macOS
-    deploymentTarget: 13.0
+    deploymentTarget: 14.0
     sources:
       - path: ${target_name}
 
@@ -86,4 +86,3 @@ targets:
       - package: RadialTimer
         products:
           - TimerFeature
-          - SoundEffectClient
