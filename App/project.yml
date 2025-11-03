@@ -39,7 +39,7 @@ targetTemplates:
       properties:
         CFBundleName: RadialTimer
         CFBundleDisplayName: RadialTimer
-        CFBundleShortVersionString: "0.1"
+        CFBundleShortVersionString: "0.2"
         CFBundleVersion: "0"
         LSMinimumSystemVersion: "14.0"
 
