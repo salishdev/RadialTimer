@@ -1,6 +1,7 @@
 import Cocoa
 import SwiftUI
 import TimerFeature
+import AppSettings
 
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
   var statusBar: NSStatusBar!
@@ -8,7 +9,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
   var statusItem: NSStatusItem!
   var isMuted: Bool = false
 
-  let viewModel = TimerViewModel()
+  let appSettings = AppSettings.shared
+  let viewModel: TimerViewModel
+
+  override init() {
+    // Initialize view model with app settings
+    self.viewModel = TimerViewModel(appSettings: appSettings)
+    super.init()
+  }
 
   func applicationDidFinishLaunching(_ aNotification: Notification) {
     let contentView = NSHostingView(rootView: TimerFeature.MenuView(
@@ -17,16 +25,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         guard let self = self else { return }
         self.statusItem.button?.performClick(nil)
       })
+      .appSettings(appSettings)
     )
     contentView.frame = NSRect(x: 0, y: 0, width: 150, height: 120)
 
     // Status bar icon SwiftUI view & a hosting view.
     //
     let iconSwiftUI = ZStack {
-      CircularAnalogView(viewModel: self.viewModel)
+      MenuBarItemView(viewModel: self.viewModel)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
         .padding(.horizontal, 4)
     }
+    .appSettings(appSettings)
 
     let iconView = NSHostingView(rootView: iconSwiftUI)
     iconView.frame = NSRect(x: 0, y: 0, width: 26, height: 22)

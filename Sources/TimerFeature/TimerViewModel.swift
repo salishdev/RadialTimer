@@ -1,3 +1,4 @@
+import AppSettings
 import AVFoundation
 import Observation
 import SwiftUI
@@ -9,17 +10,17 @@ public final class TimerViewModel {
   public var timeRemaining: Int
   public var duration: Int {
     didSet {
-      UserDefaults.standard.set(duration, forKey: "duration")
+      appSettings?.duration = duration
     }
   }
 
   public var isTimerOn: Bool = false
   public var isTimerExpired: Bool = false
-  public var color: Color = .primary
 
   // Private
   private var timerTask: Task<Void, Never>?
   private var soundPlayer: AVPlayer?
+  private var appSettings: AppSettingsProtocol?
 
   // MARK: - Computed Properties
 
@@ -50,15 +51,16 @@ public final class TimerViewModel {
     duration: Int? = nil,
     isTimerOn: Bool = false,
     isTimerExpired: Bool = false,
-    color: Color = .primary,
-    loadFromDefaults: Bool = true
+    appSettings: AppSettingsProtocol? = nil
   ) {
-    // If duration is explicitly provided, use it. Otherwise, load from UserDefaults if allowed
+    self.appSettings = appSettings
+
+    // If duration is explicitly provided, use it. Otherwise, load from appSettings if available
     let effectiveDuration: Int
     if let explicitDuration = duration {
       effectiveDuration = explicitDuration
-    } else if loadFromDefaults {
-      effectiveDuration = UserDefaults.standard.object(forKey: "duration") as? Int ?? 60 * 60
+    } else if let settings = appSettings {
+      effectiveDuration = settings.duration
     } else {
       effectiveDuration = 60 * 60
     }
@@ -67,9 +69,17 @@ public final class TimerViewModel {
     self.timeRemaining = timeRemaining ?? effectiveDuration
     self.isTimerOn = isTimerOn
     self.isTimerExpired = isTimerExpired
-    self.color = color
 
     // Initialize sound player
+    loadSound()
+  }
+
+  /// Configure the view model with AppSettings from the environment
+  public func configure(with appSettings: AppSettingsProtocol) {
+    self.appSettings = appSettings
+    // Sync current values from settings
+    duration = appSettings.duration
+    timeRemaining = appSettings.duration
     loadSound()
   }
 
@@ -80,17 +90,17 @@ public final class TimerViewModel {
   // MARK: - Sound Management
 
   private func loadSound() {
-    // Check user's sound preference
-    let soundPreference = UserDefaults.standard.string(forKey: "selectedSound") ?? "Update"
+    // Check user's sound preference from settings
+    let soundOption = appSettings?.selectedSound ?? .default
 
     // If sound is disabled, don't load any sound
-    if soundPreference == "None" {
+    if soundOption == .none {
       soundPlayer = nil
       return
     }
 
     // Load the appropriate sound file
-    let fileName = soundPreference == "Update" ? "Update.caf" : "Update.caf"
+    let fileName = "Update.caf"
     guard let url = Bundle.main.url(forResource: fileName, withExtension: "") else {
       print("Sound file not found: \(fileName)")
       return
@@ -126,7 +136,6 @@ public final class TimerViewModel {
   }
 
   public func resetTimer() {
-    print(duration)
     timeRemaining = duration
     isTimerExpired = false
     isTimerOn = false

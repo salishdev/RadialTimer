@@ -1,7 +1,9 @@
 import SwiftUI
+import AppSettings
 
 public struct SettingsView: View {
   @State private var viewModel = SettingsViewModel()
+  @Environment(\.appSettings) private var appSettings
 
   public init() {}
 
@@ -27,7 +29,7 @@ public struct SettingsView: View {
 
               Spacer()
 
-              if option != .disabled {
+              if option != .none {
                 Button(action: {
                   if viewModel.selectedSound == option {
                     viewModel.previewSound()
@@ -64,6 +66,9 @@ public struct SettingsView: View {
     }
     .padding()
     .frame(width: 300, height: 200)
+    .onAppear {
+      viewModel.configure(with: appSettings)
+    }
   }
 }
 

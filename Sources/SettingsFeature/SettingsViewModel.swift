@@ -1,58 +1,44 @@
 import AVFoundation
 import Foundation
 import SwiftUI
+import AppSettings
 
 public extension SettingsView {
-  enum SoundOption: String, CaseIterable {
-    case defaultSound = "Update"
-    case disabled = "None"
-
-    var displayName: String {
-      switch self {
-      case .defaultSound: return "Default"
-      case .disabled: return "None (Silent)"
-      }
-    }
-
-    var fileName: String? {
-      switch self {
-      case .defaultSound: return "Update.caf"
-      case .disabled: return nil
-      }
-    }
-  }
-
   @Observable
   final class SettingsViewModel {
     // MARK: - Properties
 
     public var selectedSound: SoundOption {
       didSet {
-        UserDefaults.standard.set(selectedSound.rawValue, forKey: "selectedSound")
+        appSettings?.selectedSound = selectedSound
       }
     }
 
     private var soundPlayer: AVPlayer?
+    private var appSettings: AppSettingsProtocol?
 
     // MARK: - Initialization
 
-    public init() {
-      // Load saved sound preference
-      if let savedSound = UserDefaults.standard.string(forKey: "selectedSound"),
-         let sound = SoundOption(rawValue: savedSound)
-      {
-        self.selectedSound = sound
-      } else {
-        self.selectedSound = .defaultSound
-      }
+    public init(appSettings: AppSettingsProtocol? = nil) {
+      self.appSettings = appSettings
+      // Load saved sound preference from settings
+      self.selectedSound = appSettings?.selectedSound ?? .default
+    }
+
+    /// Configure the view model with AppSettings from the environment
+    public func configure(with appSettings: AppSettingsProtocol) {
+      self.appSettings = appSettings
+      // Sync current value from settings
+      self.selectedSound = appSettings.selectedSound
     }
 
     // MARK: - Methods
 
     public func previewSound() {
-      guard let fileName = selectedSound.fileName,
-            let url = Bundle.main.url(forResource: fileName, withExtension: nil)
-      else {
+      guard selectedSound != .none else { return }
+
+      let fileName = "Update.caf"
+      guard let url = Bundle.main.url(forResource: fileName, withExtension: nil) else {
         return
       }
 
