@@ -8,28 +8,26 @@ public struct GeneralSettingsView: View {
   public init() {}
 
   public var body: some View {
-    VStack(alignment: .leading, spacing: 20) {
-      Text("Settings")
-        .font(.title2)
-        .fontWeight(.semibold)
+    Form {
+      Section("Sound") {
+        Toggle("Play a sound when timer expires", isOn: Binding(
+          get: { userPreferences.isSoundEnabled },
+          set: { userPreferences.isSoundEnabled = $0 }
+        ).animation())
 
-      VStack(alignment: .leading, spacing: 12) {
-        Text("Timer Sound")
-          .font(.headline)
+        if userPreferences.isSoundEnabled {
+          VStack(alignment: .leading, spacing: 8) {
+            ForEach(TimerSound.allCases, id: \.self) { option in
+              HStack {
+                Image(systemName: viewModel.selectedSound == option ? "circle.inset.filled" : "circle")
+                  .foregroundColor(viewModel.selectedSound == option ? .accentColor : .secondary)
+                  .imageScale(.medium)
 
-        VStack(alignment: .leading, spacing: 8) {
-          ForEach(SoundOption.allCases, id: \.self) { option in
-            HStack {
-              Image(systemName: viewModel.selectedSound == option ? "circle.inset.filled" : "circle")
-                .foregroundColor(viewModel.selectedSound == option ? .accentColor : .secondary)
-                .imageScale(.medium)
+                Text(option.displayName)
+                  .font(.body)
 
-              Text(option.displayName)
-                .font(.body)
+                Spacer()
 
-              Spacer()
-
-              if option != .none {
                 Button(action: {
                   if viewModel.selectedSound == option {
                     viewModel.previewSound()
@@ -43,36 +41,36 @@ public struct GeneralSettingsView: View {
                 .disabled(viewModel.selectedSound != option)
                 .opacity(viewModel.selectedSound == option ? 1 : 0.3)
               }
+              .padding(.vertical, 4)
+              .padding(.horizontal, 8)
+              .background(
+                RoundedRectangle(cornerRadius: 6)
+                  .fill(viewModel.selectedSound == option ? Color.accentColor.opacity(0.1) : Color.clear)
+              )
+              .contentShape(Rectangle())
+              .onTapGesture {
+                viewModel.selectedSound = option
+              }
             }
-            .padding(.vertical, 4)
-            .padding(.horizontal, 8)
-            .background(
-              RoundedRectangle(cornerRadius: 6)
-                .fill(viewModel.selectedSound == option ? Color.accentColor.opacity(0.1) : Color.clear)
-            )
-            .contentShape(Rectangle())
-            .onTapGesture {
-              viewModel.selectedSound = option
-            }
+
+            Text("Choose a sound to play when the timer expires")
+              .font(.caption)
+              .foregroundColor(.secondary)
+              .padding(.top, 4)
           }
+          .transition(.opacity.combined(with: .scale(scale: 0.95, anchor: .top)))
         }
-
-        Text("Choose a sound to play when the timer expires")
-          .font(.caption)
-          .foregroundColor(.secondary)
       }
-
-      Spacer()
     }
-    .padding()
-    .frame(width: 300, height: 200)
+    .formStyle(.grouped)
+    .frame(width: 400, height: 300)
     .onAppear {
       viewModel.configure(with: userPreferences)
     }
   }
 }
 
-#Preview(traits: .sizeThatFitsLayout) {
+#Preview {
   GeneralSettingsView()
     .padding()
 }

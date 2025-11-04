@@ -91,11 +91,8 @@ public final class TimerViewModel {
   // MARK: - Sound Management
 
   private func loadSound() {
-    // Check user's sound preference from settings
-    let soundOption = userPreferences?.selectedSound ?? .default
-
     // If sound is disabled, don't load any sound
-    if soundOption == .none {
+    guard userPreferences?.isSoundEnabled == true else {
       soundPlayer = nil
       return
     }

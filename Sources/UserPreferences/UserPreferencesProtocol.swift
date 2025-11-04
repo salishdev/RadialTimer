@@ -7,25 +7,25 @@ public protocol UserPreferencesProtocol: AnyObject {
   /// The timer duration in seconds
   var duration: Int { get set }
 
-  /// The selected sound option for timer completion
-  var selectedSound: SoundOption { get set }
+  /// Whether sound is enabled when the timer completes
+  var isSoundEnabled: Bool { get set }
+
+  /// The selected timer sound for timer completion
+  var selectedSound: TimerSound { get set }
 
   /// Resets all settings to their default values
   func resetToDefaults()
 }
 
-/// Sound options available for timer completion
-public enum SoundOption: String, CaseIterable {
+/// Timer sounds available for timer completion
+public enum TimerSound: String, CaseIterable {
   case `default`
-  case none
 
-  /// User-friendly display name for the sound option
+  /// User-friendly display name for the timer sound
   public var displayName: String {
     switch self {
     case .default:
       return "Default"
-    case .none:
-      return "None (Silent)"
     }
   }
 }

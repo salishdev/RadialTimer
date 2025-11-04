@@ -17,8 +17,15 @@ public final class UserPreferences: UserPreferencesProtocol {
     }
   }
 
-  /// The selected sound option for timer completion
-  public var selectedSound: SoundOption {
+  /// Whether sound is enabled when the timer completes
+  public var isSoundEnabled: Bool {
+    didSet {
+      userDefaults.set(isSoundEnabled, forKey: SettingsKey.isSoundEnabled.rawValue)
+    }
+  }
+
+  /// The selected timer sound for timer completion
+  public var selectedSound: TimerSound {
     didSet {
       userDefaults.set(selectedSound.rawValue, forKey: SettingsKey.selectedSound.rawValue)
     }
@@ -31,14 +38,16 @@ public final class UserPreferences: UserPreferencesProtocol {
 
     // Load saved values or use defaults
     self.duration = userDefaults.object(forKey: SettingsKey.duration.rawValue) as? Int ?? 1500 // 25 minutes default
+    self.isSoundEnabled = userDefaults.object(forKey: SettingsKey.isSoundEnabled.rawValue) as? Bool ?? true
 
-    let soundRawValue = userDefaults.string(forKey: SettingsKey.selectedSound.rawValue) ?? SoundOption.default.rawValue
-    self.selectedSound = SoundOption(rawValue: soundRawValue) ?? .default
+    let soundRawValue = userDefaults.string(forKey: SettingsKey.selectedSound.rawValue) ?? TimerSound.default.rawValue
+    self.selectedSound = TimerSound(rawValue: soundRawValue) ?? .default
   }
 
   /// Resets all settings to their default values
   public func resetToDefaults() {
     duration = 1500 // 25 minutes
+    isSoundEnabled = true
     selectedSound = .default
   }
 }
@@ -46,5 +55,6 @@ public final class UserPreferences: UserPreferencesProtocol {
 /// Type-safe keys for UserDefaults storage
 enum SettingsKey: String {
   case duration = "duration"
+  case isSoundEnabled = "isSoundEnabled"
   case selectedSound = "selectedSound"
 }

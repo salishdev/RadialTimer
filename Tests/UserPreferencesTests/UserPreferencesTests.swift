@@ -18,6 +18,7 @@ final class UserPreferencesTests: XCTestCase {
 
     // Test default values
     XCTAssertEqual(preferences.duration, 1500) // 25 minutes default
+    XCTAssertEqual(preferences.isSoundEnabled, true)
     XCTAssertEqual(preferences.selectedSound, .default)
   }
 
@@ -41,12 +42,12 @@ final class UserPreferencesTests: XCTestCase {
 
     let preferences = UserPreferences(userDefaults: testDefaults)
 
-    // Change sound
-    preferences.selectedSound = .none
+    // Change sound enabled state
+    preferences.isSoundEnabled = false
 
     // Create new preferences instance to verify persistence
     let preferences2 = UserPreferences(userDefaults: testDefaults)
-    XCTAssertEqual(preferences2.selectedSound, .none)
+    XCTAssertEqual(preferences2.isSoundEnabled, false)
   }
 
   func testResetToDefaults() throws {
@@ -57,51 +58,52 @@ final class UserPreferencesTests: XCTestCase {
 
     // Change values
     preferences.duration = 7200
-    preferences.selectedSound = .none
+    preferences.isSoundEnabled = false
 
     // Reset
     preferences.resetToDefaults()
 
     // Verify defaults are restored
     XCTAssertEqual(preferences.duration, 1500)
+    XCTAssertEqual(preferences.isSoundEnabled, true)
     XCTAssertEqual(preferences.selectedSound, .default)
   }
 
-  func testSoundOptionEnum() throws {
+  func testTimerSoundEnum() throws {
     // Test all cases
-    XCTAssertEqual(SoundOption.allCases.count, 2)
-    XCTAssertTrue(SoundOption.allCases.contains(.default))
-    XCTAssertTrue(SoundOption.allCases.contains(.none))
+    XCTAssertEqual(TimerSound.allCases.count, 1)
+    XCTAssertTrue(TimerSound.allCases.contains(.default))
 
     // Test raw values
-    XCTAssertEqual(SoundOption.default.rawValue, "default")
-    XCTAssertEqual(SoundOption.none.rawValue, "none")
+    XCTAssertEqual(TimerSound.default.rawValue, "default")
 
     // Test display names
-    XCTAssertEqual(SoundOption.default.displayName, "Default")
-    XCTAssertEqual(SoundOption.none.displayName, "None (Silent)")
+    XCTAssertEqual(TimerSound.default.displayName, "Default")
   }
 
   func testMockUserPreferences() throws {
     let mockPreferences = MockUserPreferences(
       duration: 600,
-      selectedSound: .none
+      isSoundEnabled: false,
+      selectedSound: .default
     )
 
     // Test initial values
     XCTAssertEqual(mockPreferences.duration, 600)
-    XCTAssertEqual(mockPreferences.selectedSound, .none)
+    XCTAssertEqual(mockPreferences.isSoundEnabled, false)
+    XCTAssertEqual(mockPreferences.selectedSound, .default)
 
     // Test mutations
     mockPreferences.duration = 1200
-    mockPreferences.selectedSound = .default
+    mockPreferences.isSoundEnabled = true
 
     XCTAssertEqual(mockPreferences.duration, 1200)
-    XCTAssertEqual(mockPreferences.selectedSound, .default)
+    XCTAssertEqual(mockPreferences.isSoundEnabled, true)
 
     // Test reset
     mockPreferences.resetToDefaults()
     XCTAssertEqual(mockPreferences.duration, 1500)
+    XCTAssertEqual(mockPreferences.isSoundEnabled, true)
     XCTAssertEqual(mockPreferences.selectedSound, .default)
   }
 

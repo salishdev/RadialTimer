@@ -8,7 +8,7 @@ public extension GeneralSettingsView {
   final class SettingsViewModel {
     // MARK: - Properties
 
-    public var selectedSound: SoundOption {
+    public var selectedSound: TimerSound {
       didSet {
         userPreferences?.selectedSound = selectedSound
       }
@@ -35,8 +35,6 @@ public extension GeneralSettingsView {
     // MARK: - Methods
 
     public func previewSound() {
-      guard selectedSound != .none else { return }
-
       let fileName = "Update.caf"
       guard let url = Bundle.main.url(forResource: fileName, withExtension: nil) else {
         return
