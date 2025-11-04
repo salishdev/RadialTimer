@@ -9,6 +9,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
   private var settingsWindowController: SettingsWindowController?
   private var statusBar: NSStatusBar!
   private var statusBarMenu: NSMenu!
+  private var contextMenu: NSMenu!
   private var statusItem: NSStatusItem!
   private var isMuted: Bool = false
 
@@ -55,6 +56,46 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     statusBarMenu.delegate = self
     statusBarMenu.addItem(menuItem)
 
+    // Creating context menu for right-click
+    //
+    contextMenu = NSMenu()
+    contextMenu.delegate = self
+
+    let toggleMenuItem = NSMenuItem(
+      title: viewModel.isTimerOn ? "Pause Timer" : "Start Timer",
+      action: #selector(toggleTimerFromMenu),
+      keyEquivalent: ""
+    )
+    toggleMenuItem.target = self
+    contextMenu.addItem(toggleMenuItem)
+
+    let resetMenuItem = NSMenuItem(
+      title: "Reset Timer",
+      action: #selector(resetTimerFromMenu),
+      keyEquivalent: ""
+    )
+    resetMenuItem.target = self
+    contextMenu.addItem(resetMenuItem)
+
+    contextMenu.addItem(NSMenuItem.separator())
+
+    let settingsMenuItem = NSMenuItem(
+      title: "Settings...",
+      action: #selector(openSettingsFromMenu),
+      keyEquivalent: ""
+    )
+    settingsMenuItem.target = self
+    contextMenu.addItem(settingsMenuItem)
+
+    contextMenu.addItem(NSMenuItem.separator())
+
+    let quitMenuItem = NSMenuItem(
+      title: "Quit",
+      action: #selector(NSApplication.terminate(_:)),
+      keyEquivalent: "q"
+    )
+    contextMenu.addItem(quitMenuItem)
+
     // Adding content view to the status bar
     //
     let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -80,9 +121,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
   @objc func statusBarButtonClicked(sender: NSStatusBarButton) {
     let event = NSApp.currentEvent!
+
     if event.type == NSEvent.EventType.rightMouseUp {
+      // Right-click: Show context menu
+      updateContextMenuItems()
+      statusItem.menu = contextMenu
+      statusItem.button?.performClick(nil)
+    } else if event.modifierFlags.contains(.option) {
+      // Option+Left-click: Toggle timer directly
       viewModel.toggleTimer()
     } else {
+      // Left-click: Show popup menu
       statusItem.menu = statusBarMenu
       statusItem.button?.performClick(nil)
     }
@@ -90,6 +139,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
   @objc func menuDidClose(_ menu: NSMenu) {
     statusItem.menu = nil // remove menu so button works as before
+  }
+
+  func updateContextMenuItems() {
+    // Update toggle menu item title based on timer state
+    if let toggleItem = contextMenu.items.first {
+      toggleItem.title = viewModel.isTimerOn ? "Stop Timer" : "Start Timer"
+    }
+  }
+
+  @objc func toggleTimerFromMenu() {
+    viewModel.toggleTimer()
+  }
+
+  @objc func resetTimerFromMenu() {
+    viewModel.resetTimer()
+  }
+
+  @objc func openSettingsFromMenu() {
+    openSettings()
   }
 
   func openSettings() {

@@ -1,7 +1,8 @@
-import UserPreferences
 import AVFoundation
 import Observation
 import SwiftUI
+
+import UserPreferences
 
 @Observable
 public final class TimerViewModel {

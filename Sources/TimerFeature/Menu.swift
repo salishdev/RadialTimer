@@ -61,11 +61,6 @@ public struct MenuView: View {
           viewModel.resetTimer()
           onClose()
         }
-
-        MenuButton(imageName: "gear") {
-//          NSApplication.shared.terminate(self)
-          openSettings()
-        }
       }
       .padding(.horizontal, 4)
 
