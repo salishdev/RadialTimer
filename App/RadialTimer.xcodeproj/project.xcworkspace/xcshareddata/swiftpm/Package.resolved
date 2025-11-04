@@ -1,6 +1,15 @@
 {
-  "originHash" : "a1d9cd7879618a6b0fc29bc7bd115b8453fafa8654c6eec333f7909e375c45d7",
+  "originHash" : "83d5ea948c8fc2f6746e5e21e270b596def1dcd7d550b3e166f934e1841e3ba9",
   "pins" : [
+    {
+      "identity" : "settings",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/sindresorhus/Settings",
+      "state" : {
+        "revision" : "879ea83a7bbc6dbebf62bed8c547f090146372a6",
+        "version" : "3.1.1"
+      }
+    },
     {
       "identity" : "swiftui-introspect",
       "kind" : "remoteSourceControl",

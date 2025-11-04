@@ -1,13 +1,8 @@
-//
-//  MockAppSettings.swift
-//  RadialTimer
-//
-
 import Foundation
 
-/// Mock implementation of AppSettingsProtocol for testing purposes.
+/// Mock implementation of UserPreferencesProtocol for testing purposes.
 /// This allows tests to run in isolation without persisting to UserDefaults.
-public final class MockAppSettings: AppSettingsProtocol {
+public final class MockUserPreferences: UserPreferencesProtocol {
   public var duration: Int
   public var selectedSound: SoundOption
 

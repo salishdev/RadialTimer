@@ -1,17 +1,12 @@
-//
-//  AppSettings.swift
-//  RadialTimer
-//
-
 import Foundation
 import Observation
 
-/// Concrete implementation of AppSettingsProtocol that manages app settings
+/// Concrete implementation of UserPreferencesProtocol that manages user preferences
 /// using UserDefaults for persistence and @Observable for reactivity.
 @Observable
-public final class AppSettings: AppSettingsProtocol {
+public final class UserPreferences: UserPreferencesProtocol {
   /// Shared instance for convenience (can still create custom instances for testing)
-  public static let shared = AppSettings()
+  public static let shared = UserPreferences()
 
   private let userDefaults: UserDefaults
 

@@ -1,46 +1,46 @@
 @testable import SettingsFeature
-import AppSettings
+import UserPreferences
 import XCTest
 
 final class SettingsFeatureTests: XCTestCase {
   @MainActor
   func testSettingsViewModelInitialization() throws {
-    let mockSettings = MockAppSettings(
+    let mockPreferences = MockUserPreferences(
       duration: 1800,
       selectedSound: .none
     )
-    let viewModel = SettingsView.SettingsViewModel(appSettings: mockSettings)
+    let viewModel = GeneralSettingsView.SettingsViewModel(userPreferences: mockPreferences)
 
-    // Test that view model loads initial values from settings
+    // Test that view model loads initial values from preferences
     XCTAssertEqual(viewModel.selectedSound, .none)
   }
 
   @MainActor
   func testSoundSelectionPersistence() throws {
-    let mockSettings = MockAppSettings(selectedSound: .default)
-    let viewModel = SettingsView.SettingsViewModel(appSettings: mockSettings)
+    let mockPreferences = MockUserPreferences(selectedSound: .default)
+    let viewModel = GeneralSettingsView.SettingsViewModel(userPreferences: mockPreferences)
 
     // Change sound selection
     viewModel.selectedSound = .none
 
-    // Verify it updates the mock settings
-    XCTAssertEqual(mockSettings.selectedSound, .none)
+    // Verify it updates the mock preferences
+    XCTAssertEqual(mockPreferences.selectedSound, .none)
 
     // Change to default
     viewModel.selectedSound = .default
-    XCTAssertEqual(mockSettings.selectedSound, .default)
+    XCTAssertEqual(mockPreferences.selectedSound, .default)
   }
 
   @MainActor
   func testConfigureMethod() throws {
-    let mockSettings1 = MockAppSettings(selectedSound: .default)
-    let mockSettings2 = MockAppSettings(selectedSound: .none)
+    let mockPreferences1 = MockUserPreferences(selectedSound: .default)
+    let mockPreferences2 = MockUserPreferences(selectedSound: .none)
 
-    let viewModel = SettingsView.SettingsViewModel(appSettings: mockSettings1)
+    let viewModel = GeneralSettingsView.SettingsViewModel(userPreferences: mockPreferences1)
     XCTAssertEqual(viewModel.selectedSound, .default)
 
-    // Configure with different settings
-    viewModel.configure(with: mockSettings2)
+    // Configure with different preferences
+    viewModel.configure(with: mockPreferences2)
     XCTAssertEqual(viewModel.selectedSound, .none)
   }
 
@@ -52,8 +52,8 @@ final class SettingsFeatureTests: XCTestCase {
 
   @MainActor
   func testSoundPreviewForSilentOption() throws {
-    let mockSettings = MockAppSettings(selectedSound: .none)
-    let viewModel = SettingsView.SettingsViewModel(appSettings: mockSettings)
+    let mockPreferences = MockUserPreferences(selectedSound: .none)
+    let viewModel = GeneralSettingsView.SettingsViewModel(userPreferences: mockPreferences)
 
     // Preview sound when silent is selected should not crash
     viewModel.previewSound()

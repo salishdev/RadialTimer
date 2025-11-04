@@ -1,14 +1,9 @@
-//
-//  AppSettingsProtocol.swift
-//  RadialTimer
-//
-
 import Foundation
 
-/// Protocol defining all application settings.
-/// This protocol provides a clean interface for accessing and modifying app settings,
+/// Protocol defining all user preferences.
+/// This protocol provides a clean interface for accessing and modifying user preferences,
 /// allowing for easy testing with mock implementations.
-public protocol AppSettingsProtocol: AnyObject {
+public protocol UserPreferencesProtocol: AnyObject {
   /// The timer duration in seconds
   var duration: Int { get set }
 

@@ -37,10 +37,12 @@ struct MenuButton: View {
 public struct MenuView: View {
   @Bindable public var viewModel: TimerViewModel
   public let onClose: () -> Void
+  public let openSettings: () -> Void
 
-  public init(viewModel: TimerViewModel, onClose: @escaping () -> Void = {}) {
+  public init(viewModel: TimerViewModel, onClose: @escaping () -> Void = {}, openSettings: @escaping () -> Void = {}) {
     self.viewModel = viewModel
     self.onClose = onClose
+    self.openSettings = openSettings
   }
 
   public var body: some View {
@@ -60,8 +62,9 @@ public struct MenuView: View {
           onClose()
         }
 
-        MenuButton(imageName: "power") {
-          NSApplication.shared.terminate(self)
+        MenuButton(imageName: "gear") {
+//          NSApplication.shared.terminate(self)
+          openSettings()
         }
       }
       .padding(.horizontal, 4)

@@ -1,31 +1,37 @@
 import Cocoa
+import Settings
+import SettingsFeature
 import SwiftUI
 import TimerFeature
-import AppSettings
+import UserPreferences
 
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
-  var statusBar: NSStatusBar!
-  var statusBarMenu: NSMenu!
-  var statusItem: NSStatusItem!
-  var isMuted: Bool = false
+  private var settingsWindowController: SettingsWindowController?
+  private var statusBar: NSStatusBar!
+  private var statusBarMenu: NSMenu!
+  private var statusItem: NSStatusItem!
+  private var isMuted: Bool = false
 
-  let appSettings = AppSettings.shared
+  let userPreferences = UserPreferences.shared
   let viewModel: TimerViewModel
 
   override init() {
-    // Initialize view model with app settings
-    self.viewModel = TimerViewModel(appSettings: appSettings)
+    // Initialize view model with user preferences
+    self.viewModel = TimerViewModel(userPreferences: userPreferences)
     super.init()
   }
 
   func applicationDidFinishLaunching(_ aNotification: Notification) {
-    let contentView = NSHostingView(rootView: TimerFeature.MenuView(
-      viewModel: viewModel,
-      onClose: { [weak self] in
-        guard let self = self else { return }
-        self.statusItem.button?.performClick(nil)
-      })
-      .appSettings(appSettings)
+    let contentView = NSHostingView(rootView:
+      TimerFeature.MenuView(
+        viewModel: viewModel,
+        onClose: { [weak self] in
+          guard let self = self else { return }
+          self.statusItem.button?.performClick(nil)
+        },
+        openSettings: openSettings
+      )
+      .userPreferences(userPreferences)
     )
     contentView.frame = NSRect(x: 0, y: 0, width: 150, height: 120)
 
@@ -36,7 +42,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
         .padding(.horizontal, 4)
     }
-    .appSettings(appSettings)
+    .userPreferences(userPreferences)
 
     let iconView = NSHostingView(rootView: iconSwiftUI)
     iconView.frame = NSRect(x: 0, y: 0, width: 26, height: 22)
@@ -84,5 +90,30 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
   @objc func menuDidClose(_ menu: NSMenu) {
     statusItem.menu = nil // remove menu so button works as before
+  }
+
+  func openSettings() {
+    if settingsWindowController == nil {
+      settingsWindowController = SettingsWindowController(
+        panes: [
+          Settings.Pane(
+            identifier: Settings.PaneIdentifier.general,
+            title: "General",
+            toolbarIcon: NSImage(systemSymbolName: "gear", accessibilityDescription: "General settings")!
+          ) {
+            GeneralSettingsView()
+          },
+          Settings.Pane(
+            identifier: Settings.PaneIdentifier.about,
+            title: "About",
+            toolbarIcon: NSImage(systemSymbolName: "info.circle", accessibilityDescription: "About")!
+          ) {
+            AboutView(icon: Image(nsImage: NSApplication.shared.applicationIconImage))
+          },
+        ]
+      )
+    }
+    settingsWindowController?.show()
+    settingsWindowController?.window?.orderFrontRegardless()
   }
 }

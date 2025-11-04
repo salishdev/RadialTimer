@@ -8,31 +8,31 @@ let package = Package(
   products: [
     .library(name: "TimerFeature", targets: ["TimerFeature"]),
     .library(name: "SettingsFeature", targets: ["SettingsFeature"]),
-    .library(name: "AppSettings", targets: ["AppSettings"]),
+    .library(name: "UserPreferences", targets: ["UserPreferences"]),
   ],
   dependencies: [
     .package(url: "https://github.com/siteline/swiftui-introspect", from: "1.3.0"),
   ],
   targets: [
     .target(
-      name: "AppSettings",
+      name: "UserPreferences",
       dependencies: []
     ),
     .target(
       name: "TimerFeature",
       dependencies: [
         .product(name: "SwiftUIIntrospect", package: "swiftui-introspect"),
-        "AppSettings",
+        "UserPreferences",
       ]
     ),
     .target(
       name: "SettingsFeature",
       dependencies: [
-        "AppSettings",
+        "UserPreferences",
       ]
     ),
 
-    .testTarget(name: "AppSettingsTests", dependencies: ["AppSettings"]),
+    .testTarget(name: "UserPreferencesTests", dependencies: ["UserPreferences"]),
     .testTarget(name: "TimerFeatureTests", dependencies: ["TimerFeature"]),
     .testTarget(name: "SettingsFeatureTests", dependencies: ["SettingsFeature"]),
   ]

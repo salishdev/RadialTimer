@@ -1,12 +1,12 @@
 @testable import TimerFeature
-import AppSettings
+import UserPreferences
 import XCTest
 
 final class TimerFeatureTests: XCTestCase {
   @MainActor
   func testTimerStartAndStop() async throws {
-    let mockSettings = MockAppSettings(duration: 60)
-    let viewModel = TimerViewModel(duration: 60, appSettings: mockSettings)
+    let mockPreferences = MockUserPreferences(duration: 60)
+    let viewModel = TimerViewModel(duration: 60, userPreferences: mockPreferences)
 
     // Test initial state
     XCTAssertFalse(viewModel.isTimerOn)
@@ -29,8 +29,8 @@ final class TimerFeatureTests: XCTestCase {
 
   @MainActor
   func testTimerReset() async throws {
-    let mockSettings = MockAppSettings(duration: 60)
-    let viewModel = TimerViewModel(duration: 60, appSettings: mockSettings)
+    let mockPreferences = MockUserPreferences(duration: 60)
+    let viewModel = TimerViewModel(duration: 60, userPreferences: mockPreferences)
 
     // Start timer
     viewModel.toggleTimer()
@@ -50,8 +50,8 @@ final class TimerFeatureTests: XCTestCase {
 
   @MainActor
   func testTimerStartFromExpiredState() throws {
-    let mockSettings = MockAppSettings(duration: 60)
-    let viewModel = TimerViewModel(timeRemaining: 0, duration: 60, isTimerExpired: true, appSettings: mockSettings)
+    let mockPreferences = MockUserPreferences(duration: 60)
+    let viewModel = TimerViewModel(timeRemaining: 0, duration: 60, isTimerExpired: true, userPreferences: mockPreferences)
 
     // Verify expired state
     XCTAssertTrue(viewModel.isTimerExpired)
@@ -66,21 +66,21 @@ final class TimerFeatureTests: XCTestCase {
 
   @MainActor
   func testTimeFormatting() throws {
-    let mockSettings = MockAppSettings()
-    let viewModel = TimerViewModel(timeRemaining: 9932, duration: 9932, appSettings: mockSettings)
+    let mockPreferences = MockUserPreferences()
+    let viewModel = TimerViewModel(timeRemaining: 9932, duration: 9932, userPreferences: mockPreferences)
     XCTAssertEqual(viewModel.formattedTimeRemaining, "02:45:32")
 
-    let viewModel2 = TimerViewModel(timeRemaining: 3661, duration: 3661, appSettings: mockSettings)
+    let viewModel2 = TimerViewModel(timeRemaining: 3661, duration: 3661, userPreferences: mockPreferences)
     XCTAssertEqual(viewModel2.formattedTimeRemaining, "01:01:01")
 
-    let viewModel3 = TimerViewModel(timeRemaining: 59, duration: 59, appSettings: mockSettings)
+    let viewModel3 = TimerViewModel(timeRemaining: 59, duration: 59, userPreferences: mockPreferences)
     XCTAssertEqual(viewModel3.formattedTimeRemaining, "00:00:59")
   }
 
   @MainActor
   func testDurationChange() throws {
-    let mockSettings = MockAppSettings(duration: 60)
-    let viewModel = TimerViewModel(duration: 60, appSettings: mockSettings)
+    let mockPreferences = MockUserPreferences(duration: 60)
+    let viewModel = TimerViewModel(duration: 60, userPreferences: mockPreferences)
 
     // Change duration
     viewModel.durationChanged(120)
@@ -89,14 +89,14 @@ final class TimerFeatureTests: XCTestCase {
     XCTAssertFalse(viewModel.isTimerOn)
     XCTAssertFalse(viewModel.isTimerExpired)
 
-    // Verify duration is saved to mock settings
-    XCTAssertEqual(mockSettings.duration, 120)
+    // Verify duration is saved to mock preferences
+    XCTAssertEqual(mockPreferences.duration, 120)
   }
 
   @MainActor
   func testDurationAsDoubleBinding() throws {
-    let mockSettings = MockAppSettings(duration: 60)
-    let viewModel = TimerViewModel(duration: 60, appSettings: mockSettings)
+    let mockPreferences = MockUserPreferences(duration: 60)
+    let viewModel = TimerViewModel(duration: 60, userPreferences: mockPreferences)
 
     // Test getter
     XCTAssertEqual(viewModel.durationAsDouble, 60.0)

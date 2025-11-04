@@ -22,6 +22,9 @@ configFiles:
   Prod Release: Configuration/Prod.xcconfig
 
 packages:
+  Settings:
+    url: https://github.com/sindresorhus/Settings
+    from: 3.1.1
   RadialTimer:
     path: ../
 
@@ -85,5 +88,6 @@ targets:
     dependencies:
       - package: RadialTimer
         products:
+          - Settings
           - SettingsFeature
           - TimerFeature

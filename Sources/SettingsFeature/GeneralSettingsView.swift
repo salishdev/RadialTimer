@@ -1,9 +1,9 @@
 import SwiftUI
-import AppSettings
+import UserPreferences
 
-public struct SettingsView: View {
+public struct GeneralSettingsView: View {
   @State private var viewModel = SettingsViewModel()
-  @Environment(\.appSettings) private var appSettings
+  @Environment(\.userPreferences) private var userPreferences
 
   public init() {}
 
@@ -67,12 +67,12 @@ public struct SettingsView: View {
     .padding()
     .frame(width: 300, height: 200)
     .onAppear {
-      viewModel.configure(with: appSettings)
+      viewModel.configure(with: userPreferences)
     }
   }
 }
 
 #Preview(traits: .sizeThatFitsLayout) {
-  SettingsView()
+  GeneralSettingsView()
     .padding()
 }
