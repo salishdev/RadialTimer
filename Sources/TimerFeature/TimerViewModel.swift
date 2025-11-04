@@ -1,4 +1,4 @@
-import AVFoundation
+import AppKit
 import Observation
 import SwiftUI
 
@@ -20,7 +20,7 @@ public final class TimerViewModel {
 
   // Private
   private var timerTask: Task<Void, Never>?
-  private var soundPlayer: AVPlayer?
+  private var soundPlayer: NSSound?
   private var userPreferences: UserPreferencesProtocol?
 
   // MARK: - Computed Properties
@@ -97,13 +97,13 @@ public final class TimerViewModel {
       return
     }
 
-    // Load the appropriate sound file
-    let fileName = "Update.caf"
-    guard let url = Bundle.main.url(forResource: fileName, withExtension: "") else {
-      print("Sound file not found: \(fileName)")
-      return
+    // Load the selected macOS system sound
+    let soundName = userPreferences?.selectedSound.rawValue ?? TimerSound.default.rawValue
+    soundPlayer = NSSound(named: soundName)
+
+    if soundPlayer == nil {
+      print("System sound not found: \(soundName)")
     }
-    soundPlayer = AVPlayer(url: url)
   }
 
   private func playSound() {
@@ -111,7 +111,6 @@ public final class TimerViewModel {
     loadSound()
 
     // Play if sound is enabled
-    soundPlayer?.seek(to: .zero)
     soundPlayer?.play()
   }
 
@@ -155,7 +154,7 @@ public final class TimerViewModel {
 
     timerTask = Task { @MainActor in
       while !Task.isCancelled && isTimerOn {
-        try? await Task.sleep(nanoseconds: 1000000000) // 1 second
+        try? await Task.sleep(nanoseconds: 10000000) // 1 second
 
         if !Task.isCancelled {
           timerTicked()

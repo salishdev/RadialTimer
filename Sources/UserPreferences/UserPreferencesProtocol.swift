@@ -18,14 +18,28 @@ public protocol UserPreferencesProtocol: AnyObject {
 }
 
 /// Timer sounds available for timer completion
+/// These correspond to macOS system sounds accessible via NSSound
 public enum TimerSound: String, CaseIterable {
-  case `default`
+  case basso = "Basso"
+  case blow = "Blow"
+  case bottle = "Bottle"
+  case frog = "Frog"
+  case funk = "Funk"
+  case glass = "Glass"
+  case hero = "Hero"
+  case morse = "Morse"
+  case ping = "Ping"
+  case pop = "Pop"
+  case purr = "Purr"
+  case sosumi = "Sosumi"
+  case submarine = "Submarine"
+  case tink = "Tink"
 
   /// User-friendly display name for the timer sound
   public var displayName: String {
-    switch self {
-    case .default:
-      return "Default"
-    }
+    return rawValue
   }
+
+  /// Default sound to use when no preference is set
+  public static let `default`: TimerSound = .glass
 }

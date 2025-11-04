@@ -1,4 +1,4 @@
-import AVFoundation
+import AppKit
 import Foundation
 import SwiftUI
 import UserPreferences
@@ -14,7 +14,7 @@ public extension GeneralSettingsView {
       }
     }
 
-    private var soundPlayer: AVPlayer?
+    private var soundPlayer: NSSound?
     private var userPreferences: UserPreferencesProtocol?
 
     // MARK: - Initialization
@@ -35,18 +35,13 @@ public extension GeneralSettingsView {
     // MARK: - Methods
 
     public func previewSound() {
-      let fileName = "Update.caf"
-      guard let url = Bundle.main.url(forResource: fileName, withExtension: nil) else {
-        return
-      }
-
-      soundPlayer = AVPlayer(url: url)
-      soundPlayer?.seek(to: .zero)
+      // Load and play the selected macOS system sound
+      soundPlayer = NSSound(named: selectedSound.rawValue)
       soundPlayer?.play()
     }
 
     public func stopPreview() {
-      soundPlayer?.pause()
+      soundPlayer?.stop()
       soundPlayer = nil
     }
   }
