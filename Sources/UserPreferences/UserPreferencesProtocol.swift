@@ -16,8 +16,8 @@ public protocol UserPreferencesProtocol: AnyObject {
 
 /// Sound options available for timer completion
 public enum SoundOption: String, CaseIterable {
-  case `default` = "default"
-  case none = "none"
+  case `default`
+  case none
 
   /// User-friendly display name for the sound option
   public var displayName: String {
