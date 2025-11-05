@@ -39,9 +39,6 @@ public final class CustomSoundManager {
   /// Directory name for custom sounds in app support
   private let customSoundsDirectory = "CustomSounds"
 
-  /// File name for the custom sound
-  private let customSoundFileName = "CustomSound"
-
   private init() {}
 
   /// Returns the directory URL for storing custom sounds
@@ -69,6 +66,14 @@ public final class CustomSoundManager {
   /// - Parameter url: The URL of the audio file to validate
   /// - Throws: CustomSoundError if validation fails
   public func validateAudioFile(at url: URL) throws {
+    // Start accessing security-scoped resource for sandboxed file access
+    let shouldStopAccessing = url.startAccessingSecurityScopedResource()
+    defer {
+      if shouldStopAccessing {
+        url.stopAccessingSecurityScopedResource()
+      }
+    }
+
     let fileManager = FileManager.default
 
     // Check if file exists
@@ -100,7 +105,14 @@ public final class CustomSoundManager {
   /// - Returns: The URL of the copied file in the app container
   /// - Throws: CustomSoundError if validation or copying fails
   public func importCustomSound(from sourceURL: URL) throws -> URL {
-    print("\(sourceURL)")
+    // Start accessing security-scoped resource for sandboxed file access
+    let shouldStopAccessing = sourceURL.startAccessingSecurityScopedResource()
+    defer {
+      if shouldStopAccessing {
+        sourceURL.stopAccessingSecurityScopedResource()
+      }
+    }
+
     // Validate the source file
     try validateAudioFile(at: sourceURL)
 
@@ -110,11 +122,9 @@ public final class CustomSoundManager {
     // Remove any existing custom sound first
     try removeCustomSound()
 
-    // Create destination URL with original file extension
-    let fileExtension = sourceURL.pathExtension
-    let destinationURL = customSoundsDir
-      .appendingPathComponent(customSoundFileName)
-      .appendingPathExtension(fileExtension)
+    // Create destination URL preserving the original filename
+    let originalFilename = sourceURL.lastPathComponent
+    let destinationURL = customSoundsDir.appendingPathComponent(originalFilename)
 
     // Copy file to app container
     do {
@@ -131,7 +141,7 @@ public final class CustomSoundManager {
     let fileManager = FileManager.default
     let customSoundsDir = try getCustomSoundsDirectory()
 
-    // Find and remove any file starting with customSoundFileName
+    // Remove all files in the custom sounds directory (we only allow one custom sound)
     let contents = try? fileManager.contentsOfDirectory(
       at: customSoundsDir,
       includingPropertiesForKeys: nil
@@ -139,10 +149,7 @@ public final class CustomSoundManager {
 
     if let contents = contents {
       for fileURL in contents {
-        let fileName = fileURL.deletingPathExtension().lastPathComponent
-        if fileName == customSoundFileName {
-          try fileManager.removeItem(at: fileURL)
-        }
+        try fileManager.removeItem(at: fileURL)
       }
     }
   }

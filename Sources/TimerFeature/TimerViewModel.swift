@@ -172,7 +172,7 @@ public final class TimerViewModel {
 
     timerTask = Task { @MainActor in
       while !Task.isCancelled && isTimerOn {
-        try? await Task.sleep(nanoseconds: 10000000) // 1 second
+        try? await Task.sleep(nanoseconds: 1000000000) // 1 second
 
         if !Task.isCancelled {
           timerTicked()
