@@ -97,12 +97,30 @@ public final class TimerViewModel {
       return
     }
 
-    // Load the selected macOS system sound
-    let soundName = userPreferences?.selectedSound.rawValue ?? TimerSound.default.rawValue
-    soundPlayer = NSSound(named: soundName)
+    let selectedSound = userPreferences?.selectedSound ?? .default
 
-    if soundPlayer == nil {
-      print("System sound not found: \(soundName)")
+    // Handle custom sound vs system sound
+    if selectedSound == .custom {
+      // Load custom sound from URL
+      if let customSoundURL = userPreferences?.customSoundURL {
+        soundPlayer = NSSound(contentsOf: customSoundURL, byReference: false)
+
+        if soundPlayer == nil {
+          print("Failed to load custom sound from: \(customSoundURL.path)")
+          // Fallback to default system sound
+          soundPlayer = NSSound(named: TimerSound.default.rawValue)
+        }
+      } else {
+        print("Custom sound selected but no URL provided, using default")
+        soundPlayer = NSSound(named: TimerSound.default.rawValue)
+      }
+    } else {
+      // Load the selected macOS system sound
+      soundPlayer = NSSound(named: selectedSound.rawValue)
+
+      if soundPlayer == nil {
+        print("System sound not found: \(selectedSound.rawValue)")
+      }
     }
   }
 

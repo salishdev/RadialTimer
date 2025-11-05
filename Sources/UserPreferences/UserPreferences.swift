@@ -31,6 +31,22 @@ public final class UserPreferences: UserPreferencesProtocol {
     }
   }
 
+  /// The URL of the custom sound file (if custom sound is selected)
+  public var customSoundURL: URL? {
+    didSet {
+      if let url = customSoundURL {
+        userDefaults.set(url.path, forKey: SettingsKey.customSoundPath.rawValue)
+      } else {
+        userDefaults.removeObject(forKey: SettingsKey.customSoundPath.rawValue)
+      }
+    }
+  }
+
+  /// The filename of the custom sound (computed from customSoundURL)
+  public var customSoundFilename: String? {
+    return customSoundURL?.lastPathComponent
+  }
+
   /// Initialize with optional custom UserDefaults (useful for testing)
   /// - Parameter userDefaults: The UserDefaults instance to use. Defaults to .standard
   public init(userDefaults: UserDefaults = .standard) {
@@ -42,6 +58,13 @@ public final class UserPreferences: UserPreferencesProtocol {
 
     let soundRawValue = userDefaults.string(forKey: SettingsKey.selectedSound.rawValue) ?? TimerSound.default.rawValue
     self.selectedSound = TimerSound(rawValue: soundRawValue) ?? .default
+
+    // Load custom sound URL if it exists
+    if let customSoundPath = userDefaults.string(forKey: SettingsKey.customSoundPath.rawValue) {
+      self.customSoundURL = URL(fileURLWithPath: customSoundPath)
+    } else {
+      self.customSoundURL = nil
+    }
   }
 
   /// Resets all settings to their default values
@@ -49,6 +72,7 @@ public final class UserPreferences: UserPreferencesProtocol {
     duration = 1500 // 25 minutes
     isSoundEnabled = true
     selectedSound = .default
+    customSoundURL = nil
   }
 }
 
@@ -57,4 +81,5 @@ enum SettingsKey: String {
   case duration = "duration"
   case isSoundEnabled = "isSoundEnabled"
   case selectedSound = "selectedSound"
+  case customSoundPath = "customSoundPath"
 }

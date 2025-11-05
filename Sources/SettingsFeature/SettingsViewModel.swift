@@ -35,14 +35,61 @@ public extension GeneralSettingsView {
     // MARK: - Methods
 
     public func previewSound() {
-      // Load and play the selected macOS system sound
-      soundPlayer = NSSound(named: selectedSound.rawValue)
+      // Handle custom sound vs system sound
+      if selectedSound == .custom {
+        // Load custom sound from URL
+        if let customSoundURL = userPreferences?.customSoundURL {
+          soundPlayer = NSSound(contentsOf: customSoundURL, byReference: false)
+
+          if soundPlayer == nil {
+            print("Failed to load custom sound from: \(customSoundURL.path)")
+            // Fallback to default system sound
+            soundPlayer = NSSound(named: TimerSound.default.rawValue)
+          }
+        } else {
+          print("Custom sound selected but no URL provided, using default")
+          soundPlayer = NSSound(named: TimerSound.default.rawValue)
+        }
+      } else {
+        // Load the selected macOS system sound
+        soundPlayer = NSSound(named: selectedSound.rawValue)
+      }
+
       soundPlayer?.play()
     }
 
     public func stopPreview() {
       soundPlayer?.stop()
       soundPlayer = nil
+    }
+
+    // MARK: - Custom Sound Management
+
+    /// Imports a custom sound file
+    /// - Parameter url: The URL of the audio file to import
+    /// - Throws: CustomSoundError if import fails
+    public func importCustomSound(from url: URL) throws {
+      let soundManager = CustomSoundManager.shared
+      let copiedURL = try soundManager.importCustomSound(from: url)
+
+      // Update user preferences
+      userPreferences?.customSoundURL = copiedURL
+      userPreferences?.selectedSound = .custom
+      selectedSound = .custom
+    }
+
+    /// Removes the custom sound
+    public func removeCustomSound() {
+      do {
+        try CustomSoundManager.shared.removeCustomSound()
+        userPreferences?.customSoundURL = nil
+
+        // Switch back to default system sound
+        userPreferences?.selectedSound = .default
+        selectedSound = .default
+      } catch {
+        print("Failed to remove custom sound: \(error)")
+      }
     }
   }
 }

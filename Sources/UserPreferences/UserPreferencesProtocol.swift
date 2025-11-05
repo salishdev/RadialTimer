@@ -13,6 +13,12 @@ public protocol UserPreferencesProtocol: AnyObject {
   /// The selected timer sound for timer completion
   var selectedSound: TimerSound { get set }
 
+  /// The URL of the custom sound file (if custom sound is selected)
+  var customSoundURL: URL? { get set }
+
+  /// The filename of the custom sound (computed from customSoundURL)
+  var customSoundFilename: String? { get }
+
   /// Resets all settings to their default values
   func resetToDefaults()
 }
@@ -34,10 +40,16 @@ public enum TimerSound: String, CaseIterable {
   case sosumi = "Sosumi"
   case submarine = "Submarine"
   case tink = "Tink"
+  case custom = "Custom"
 
   /// User-friendly display name for the timer sound
   public var displayName: String {
     return rawValue
+  }
+
+  /// Whether this is a system sound (vs custom sound)
+  public var isSystemSound: Bool {
+    return self != .custom
   }
 
   /// Default sound to use when no preference is set

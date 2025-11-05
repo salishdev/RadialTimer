@@ -41,7 +41,8 @@ final class SettingsFeatureTests: XCTestCase {
 
   @MainActor
   func testTimerSoundDisplayNames() throws {
-    XCTAssertEqual(TimerSound.default.displayName, "Default")
+    XCTAssertEqual(TimerSound.default.displayName, "Glass")
+    XCTAssertEqual(TimerSound.custom.displayName, "Custom")
   }
 
   @MainActor
