@@ -20,67 +20,12 @@ public struct GeneralSettingsView: View {
 
         if userPreferences.isSoundEnabled {
           VStack(alignment: .leading, spacing: 8) {
-            // System Sounds Section
-            Text("System Sounds")
-              .font(.caption)
-              .foregroundColor(.secondary)
-              .padding(.bottom, 4)
-
             ForEach(TimerSound.allCases.filter { $0.isSystemSound }, id: \.self) { option in
               soundOptionRow(for: option)
             }
 
-            Divider()
-              .padding(.vertical, 8)
-
-            // Custom Sound Section
-            Text("Custom Sound")
-              .font(.caption)
-              .foregroundColor(.secondary)
-              .padding(.bottom, 4)
-
-            if let customFilename = userPreferences.customSoundFilename {
-              // Show custom sound option
-              soundOptionRow(for: .custom)
-
-              HStack(spacing: 8) {
-                Image(systemName: "doc.fill")
-                  .foregroundColor(.secondary)
-                  .imageScale(.small)
-
-                Text(customFilename)
-                  .font(.caption)
-                  .foregroundColor(.secondary)
-
-                Spacer()
-
-                Button("Replace") {
-                  showingFilePicker = true
-                }
-                .buttonStyle(.borderless)
-                .controlSize(.small)
-
-                Button("Remove") {
-                  viewModel.removeCustomSound()
-                }
-                .buttonStyle(.borderless)
-                .controlSize(.small)
-              }
-              .padding(.vertical, 4)
-              .padding(.horizontal, 8)
-            } else {
-              // Show import button
-              Button(action: {
-                showingFilePicker = true
-              }) {
-                HStack {
-                  Image(systemName: "plus.circle.fill")
-                  Text("Add Custom Sound")
-                }
-              }
-              .buttonStyle(.borderless)
-              .padding(.vertical, 4)
-            }
+            // Custom sound option
+            customSoundRow()
 
             Text("Choose a sound to play when the timer expires")
               .font(.caption)
@@ -113,6 +58,62 @@ public struct GeneralSettingsView: View {
   }
 
   // MARK: - Helper Views
+
+  @ViewBuilder
+  private func customSoundRow() -> some View {
+    let hasCustomSound = userPreferences.customSoundFilename != nil
+    let displayName = hasCustomSound ? (userPreferences.customSoundFilename ?? "Custom") : "Use your own sound..."
+
+    HStack {
+      Image(systemName: viewModel.selectedSound == .custom ? "circle.inset.filled" : "circle")
+        .foregroundColor(viewModel.selectedSound == .custom ? .accentColor : .secondary)
+        .imageScale(.medium)
+
+      Text(displayName)
+        .font(.body)
+        .foregroundColor(hasCustomSound ? .primary : .secondary)
+
+      Spacer()
+
+      if hasCustomSound {
+        Button(action: {
+          showingFilePicker = true
+        }) {
+          Image(systemName: "folder.badge.plus")
+            .foregroundColor(.secondary)
+        }
+        .buttonStyle(.plain)
+        .help("Change sound")
+      }
+
+      Button(action: {
+        if viewModel.selectedSound == .custom {
+          viewModel.previewSound()
+        }
+      }) {
+        Image(systemName: "speaker.wave.2")
+          .foregroundColor(.secondary)
+      }
+      .buttonStyle(.plain)
+      .help("Preview sound")
+      .disabled(viewModel.selectedSound != .custom || !hasCustomSound)
+      .opacity(viewModel.selectedSound == .custom && hasCustomSound ? 1 : 0.3)
+    }
+    .padding(.vertical, 4)
+    .padding(.horizontal, 8)
+    .background(
+      RoundedRectangle(cornerRadius: 6)
+        .fill(viewModel.selectedSound == .custom ? Color.accentColor.opacity(0.1) : Color.clear)
+    )
+    .contentShape(Rectangle())
+    .onTapGesture {
+      if hasCustomSound {
+        viewModel.selectedSound = .custom
+      } else {
+        showingFilePicker = true
+      }
+    }
+  }
 
   @ViewBuilder
   private func soundOptionRow(for option: TimerSound) -> some View {
