@@ -30,7 +30,9 @@ struct MenuButton: View {
         .background(.white.opacity(0.2), in: Circle())
         .padding(.horizontal, 5)
         .padding(.vertical, 2)
-    }).buttonStyle(MyButtonStyle())
+    })
+    .buttonStyle(MyButtonStyle())
+    .focusable(false) // prevents focus and removes ring
   }
 }
 
@@ -70,7 +72,7 @@ public struct MenuView: View {
         step: 60 * 5
       )
       .padding(.horizontal, 4)
-      .introspect(.slider, on: .macOS(.v10_15, .v11, .v12, .v13, .v14, .v15)) { slider in
+      .introspect(.slider, on: .macOS(.v10_15, .v11, .v12, .v13, .v14, .v15, .v26)) { slider in
         slider.numberOfTickMarks = 0
         slider.trackFillColor = NSColor.white
       }

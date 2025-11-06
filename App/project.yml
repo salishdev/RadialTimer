@@ -84,6 +84,7 @@ targets:
       path: ${target_name}/${target_name}.entitlements
       properties:
         com.apple.security.app-sandbox: true
+        com.apple.security.files.user-selected.read-write: true
 
     dependencies:
       - package: RadialTimer

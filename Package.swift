@@ -11,7 +11,7 @@ let package = Package(
     .library(name: "UserPreferences", targets: ["UserPreferences"]),
   ],
   dependencies: [
-    .package(url: "https://github.com/siteline/swiftui-introspect", from: "1.3.0"),
+    .package(url: "https://github.com/siteline/swiftui-introspect", from: "26.0.0"),
   ],
   targets: [
     .target(
