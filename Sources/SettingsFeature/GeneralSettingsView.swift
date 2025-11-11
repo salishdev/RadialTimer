@@ -36,7 +36,7 @@ public struct GeneralSettingsView: View {
       }
     }
     .formStyle(.grouped)
-    .frame(width: 400, height: 400)
+    .frame(width: 400, height: 200)
     .fileImporter(
       isPresented: $showingFilePicker,
       allowedContentTypes: [.audio],
@@ -81,17 +81,53 @@ public struct GeneralSettingsView: View {
   // MARK: - Helper Views
 
   @ViewBuilder
-  private func systemSoundRow() -> some View {
+  private func soundRow(
+    isActive: Bool,
+    @ViewBuilder label: () -> some View,
+    @ViewBuilder trailingButtons: () -> some View,
+    onTap: @escaping () -> Void
+  ) -> some View {
     HStack {
-      Image(systemName: isSystemMode ? "circle.inset.filled" : "circle")
-        .foregroundColor(isSystemMode ? .accentColor : .secondary)
+      Image(systemName: isActive ? "circle.inset.filled" : "circle")
+        .foregroundColor(isActive ? .accentColor : .secondary)
         .imageScale(.medium)
 
-      Text("System")
-        .font(.body)
+      label()
 
       Spacer()
 
+      trailingButtons()
+    }
+    .padding(.vertical, 4)
+    .padding(.horizontal, 8)
+    .background(
+      RoundedRectangle(cornerRadius: 6)
+        .fill(isActive ? Color.accentColor.opacity(0.1) : Color.clear)
+    )
+    .contentShape(Rectangle())
+    .onTapGesture(perform: onTap)
+  }
+
+  @ViewBuilder
+  private func previewButton(enabled: Bool, action: @escaping () -> Void) -> some View {
+    Button(action: action) {
+      Image(systemName: "speaker.wave.2")
+        .foregroundColor(.secondary)
+    }
+    .buttonStyle(.plain)
+    .help("Preview sound")
+    .disabled(!enabled)
+    .opacity(enabled ? 1 : 0.3)
+  }
+
+  @ViewBuilder
+  private func systemSoundRow() -> some View {
+    soundRow(
+      isActive: isSystemMode,
+    ) {
+      Text("System")
+        .font(.body)
+    } trailingButtons: {
       Picker("", selection: selectedSystemSound) {
         ForEach(TimerSound.allCases.filter { $0.isSystemSound }, id: \.self) { sound in
           Text(sound.displayName).tag(sound)
@@ -101,29 +137,11 @@ public struct GeneralSettingsView: View {
       .disabled(!isSystemMode)
       .opacity(isSystemMode ? 1 : 0.5)
 
-      Button(action: {
-        if isSystemMode {
-          viewModel.previewSound()
-        }
-      }) {
-        Image(systemName: "speaker.wave.2")
-          .foregroundColor(.secondary)
+      previewButton(enabled: isSystemMode) {
+        viewModel.previewSound()
       }
-      .buttonStyle(.plain)
-      .help("Preview sound")
-      .disabled(!isSystemMode)
-      .opacity(isSystemMode ? 1 : 0.3)
-    }
-    .padding(.vertical, 4)
-    .padding(.horizontal, 8)
-    .background(
-      RoundedRectangle(cornerRadius: 6)
-        .fill(isSystemMode ? Color.accentColor.opacity(0.1) : Color.clear)
-    )
-    .contentShape(Rectangle())
-    .onTapGesture {
+    } onTap: {
       if !isSystemMode {
-        // Switch to system mode - default to glass
         viewModel.selectedSound = .glass
       }
     }
@@ -133,20 +151,14 @@ public struct GeneralSettingsView: View {
   private func customSoundRow() -> some View {
     let hasCustomSound = userPreferences.customSoundFilename != nil
     let isCustomMode = !isSystemMode
-    let displayName = hasCustomSound ? (userPreferences.customSoundFilename ?? "Custom") : "Use your own sound..."
+    let displayName = hasCustomSound ? userPreferences.customSoundFilename! : "Custom"
 
-    HStack {
-      Image(systemName: isCustomMode ? "circle.inset.filled" : "circle")
-        .foregroundColor(isCustomMode ? .accentColor : .secondary)
-        .imageScale(.medium)
-
+    soundRow(
+      isActive: isCustomMode,
+    ) {
       Text(displayName)
         .font(.body)
-        .foregroundColor(hasCustomSound ? .primary : .secondary)
-        .opacity(isCustomMode ? 1 : 0.5)
-
-      Spacer()
-
+    } trailingButtons: {
       Button(action: {
         showingFilePicker = true
       }) {
@@ -158,27 +170,10 @@ public struct GeneralSettingsView: View {
       .disabled(!isCustomMode)
       .opacity(isCustomMode ? 1 : 0.3)
 
-      Button(action: {
-        if isCustomMode, hasCustomSound {
-          viewModel.previewSound()
-        }
-      }) {
-        Image(systemName: "speaker.wave.2")
-          .foregroundColor(.secondary)
+      previewButton(enabled: isCustomMode && hasCustomSound) {
+        viewModel.previewSound()
       }
-      .buttonStyle(.plain)
-      .help("Preview sound")
-      .disabled(!isCustomMode || !hasCustomSound)
-      .opacity(isCustomMode && hasCustomSound ? 1 : 0.3)
-    }
-    .padding(.vertical, 4)
-    .padding(.horizontal, 8)
-    .background(
-      RoundedRectangle(cornerRadius: 6)
-        .fill(isCustomMode ? Color.accentColor.opacity(0.1) : Color.clear)
-    )
-    .contentShape(Rectangle())
-    .onTapGesture {
+    } onTap: {
       if hasCustomSound {
         viewModel.selectedSound = .custom
       } else {

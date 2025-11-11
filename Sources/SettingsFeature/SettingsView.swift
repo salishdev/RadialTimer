@@ -16,6 +16,7 @@ public struct SettingsView: View {
       }
       .navigationTitle("Settings")
       .listStyle(.sidebar)
+      .toolbar(removing: .sidebarToggle)
     } detail: {
       // Detail pane for the selected section
       Group {
@@ -30,8 +31,7 @@ public struct SettingsView: View {
         }
       }
       .navigationTitle(selection?.title ?? "Settings")
-//      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-      .frame(width: 400, height: 400)
+      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
   }
 }

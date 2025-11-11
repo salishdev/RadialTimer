@@ -186,7 +186,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWindowDele
     window.delegate = self
 
     let controller = NSWindowController(window: window)
-    self.settingsWindowController = controller
+    settingsWindowController = controller
 
     controller.showWindow(nil)
     NSApp.activate(ignoringOtherApps: true)
