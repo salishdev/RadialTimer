@@ -63,6 +63,10 @@ public struct MenuView: View {
           viewModel.resetTimer()
           onClose()
         }
+
+        MenuButton(imageName: "power") {
+          NSApplication.shared.terminate(self)
+        }
       }
       .padding(.horizontal, 4)
 
