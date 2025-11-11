@@ -3,7 +3,7 @@ options:
   bundleIdPrefix: software.astere
   indentWidth: 4
   tabWidth: 4
-  localPackagesGroup: ''
+  localPackagesGroup: ""
 
 configs:
   Local Debug: debug
@@ -39,9 +39,9 @@ targetTemplates:
       properties:
         CFBundleName: RadialTimer
         CFBundleDisplayName: RadialTimer
-        CFBundleShortVersionString: '0.1'
-        CFBundleVersion: '0'
-        LSMinimumSystemVersion: '13.0'
+        CFBundleShortVersionString: "0.2"
+        CFBundleVersion: "0"
+        LSMinimumSystemVersion: "14.0"
 
   Configuration:
     info:
@@ -57,18 +57,21 @@ targets:
       - Configuration
     type: application
     platform: macOS
-    deploymentTarget: 13.0
+    deploymentTarget: 14.0
     sources:
       - path: ${target_name}
 
     scheme:
       environmentVariables:
         PATH: PATH=${PATH}:/usr/local/bin
-
       configVariants:
         - Local
         - Dev
         - Prod
+      testTargets:
+        - package: RadialTimer/UserPreferencesTests
+        - package: RadialTimer/TimerFeatureTests
+        - package: RadialTimer/SettingsFeatureTests
 
     info:
       path: ${target_name}/Info.plist
@@ -81,9 +84,43 @@ targets:
       path: ${target_name}/${target_name}.entitlements
       properties:
         com.apple.security.app-sandbox: true
+        com.apple.security.files.user-selected.read-write: true
 
     dependencies:
       - package: RadialTimer
         products:
+          - SettingsFeature
           - TimerFeature
-          - SoundEffectClient
+
+  # UserPreferencesTests:
+  #   type: bundle.unit-test
+  #   platform: macOS
+  #   deploymentTarget: 14.0
+  #   sources:
+  #     - path: ../Tests/UserPreferencesTests
+  #   dependencies:
+  #     - package: RadialTimer
+  #       products:
+  #         - UserPreferences
+
+  # TimerFeatureTests:
+  #   type: bundle.unit-test
+  #   platform: macOS
+  #   deploymentTarget: 14.0
+  #   sources:
+  #     - path: ../Tests/TimerFeatureTests
+  #   dependencies:
+  #     - package: RadialTimer
+  #       products:
+  #         - TimerFeature
+
+  # SettingsFeatureTests:
+  #   type: bundle.unit-test
+  #   platform: macOS
+  #   deploymentTarget: 14.0
+  #   sources:
+  #     - path: ../Tests/SettingsFeatureTests
+  #   dependencies:
+  #     - package: RadialTimer
+  #       products:
+  #         - SettingsFeature

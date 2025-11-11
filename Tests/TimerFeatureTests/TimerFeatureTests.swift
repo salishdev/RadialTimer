@@ -1,152 +1,109 @@
-import ComposableArchitecture
 @testable import TimerFeature
+import UserPreferences
 import XCTest
 
 final class TimerFeatureTests: XCTestCase {
-    @MainActor
-    func testTimer() async throws {
-        let clock = TestClock()
-        let soundEffectPlayCount = LockIsolated(0)
-        let duration = 2
+  @MainActor
+  func testTimerStartAndStop() async throws {
+    let mockPreferences = MockUserPreferences(duration: 60)
+    let viewModel = TimerViewModel(duration: 60, userPreferences: mockPreferences)
 
-        let store = TestStore(initialState: Timer.State(duration: duration)) {
-            Timer()
-        } withDependencies: {
-            $0.continuousClock = clock
-            $0.soundEffectClient = .noop
-            $0.soundEffectClient.play = { soundEffectPlayCount.withValue { $0 += 1 } }
-        }
+    // Test initial state
+    XCTAssertFalse(viewModel.isTimerOn)
+    XCTAssertFalse(viewModel.isTimerExpired)
+    XCTAssertEqual(viewModel.timeRemaining, 60)
 
-        // start timer
-        await store.send(.toggleTimerButtonTapped) {
-            $0.isTimerOn = true
-            $0.timeRemaining = $0.duration
-        }
+    // Start timer
+    viewModel.toggleTimer()
+    XCTAssertTrue(viewModel.isTimerOn)
+    XCTAssertFalse(viewModel.isTimerExpired)
 
-        await clock.advance(by: .seconds(1))
-        await store.receive(.timerTicked) {
-            $0.isTimerOn = true
-            $0.timeRemaining = duration - 1
-        }
+    // Wait for timer to tick
+    try await Task.sleep(nanoseconds: 1100000000) // 1.1 seconds
+    XCTAssertLessThan(viewModel.timeRemaining, 60)
 
-        // pause timer
-        await store.send(.toggleTimerButtonTapped) {
-            $0.isTimerOn = false
-        }
+    // Stop timer
+    viewModel.toggleTimer()
+    XCTAssertFalse(viewModel.isTimerOn)
+  }
 
-        // simulate time passing while paused
-        await clock.advance(by: .seconds(10))
+  @MainActor
+  func testTimerReset() async throws {
+    let mockPreferences = MockUserPreferences(duration: 60)
+    let viewModel = TimerViewModel(duration: 60, userPreferences: mockPreferences)
 
-        // unpause timer
-        await store.send(.toggleTimerButtonTapped) {
-            $0.isTimerOn = true
-        }
+    // Start timer
+    viewModel.toggleTimer()
+    XCTAssertTrue(viewModel.isTimerOn)
 
-        await clock.advance(by: .seconds(1))
-        await store.receive(.timerTicked) {
-            $0.timeRemaining = 0
-            $0.isTimerOn = false
-            $0.isTimerExpired = true
-        }
+    // Wait for timer to tick
+    try await Task.sleep(nanoseconds: 1100000000) // 1.1 seconds
+    let timeAfterTick = viewModel.timeRemaining
+    XCTAssertLessThan(timeAfterTick, 60)
 
-        XCTAssertEqual(soundEffectPlayCount.value, 1)
-    }
+    // Reset timer
+    viewModel.resetTimer()
+    XCTAssertFalse(viewModel.isTimerOn)
+    XCTAssertFalse(viewModel.isTimerExpired)
+    XCTAssertEqual(viewModel.timeRemaining, 60)
+  }
 
-    @MainActor
-    func testTimerStartFromExpiredState() async throws {
-        let clock = TestClock()
-        let soundEffectPlayCount = LockIsolated(0)
+  @MainActor
+  func testTimerStartFromExpiredState() throws {
+    let mockPreferences = MockUserPreferences(duration: 60)
+    let viewModel = TimerViewModel(timeRemaining: 0, duration: 60, isTimerExpired: true, userPreferences: mockPreferences)
 
-        // init store in expired state
-        let store = TestStore(initialState: Timer.State(timeRemaining: 0, duration: 1, isTimerExpired: true)) {
-            Timer()
-        } withDependencies: {
-            $0.continuousClock = clock
-            $0.soundEffectClient = .noop
-            $0.soundEffectClient.play = { soundEffectPlayCount.withValue { $0 += 1 } }
-        }
+    // Verify expired state
+    XCTAssertTrue(viewModel.isTimerExpired)
+    XCTAssertEqual(viewModel.timeRemaining, 0)
 
-        // start timer
-        await store.send(.toggleTimerButtonTapped) {
-            $0.isTimerOn = true
-            $0.isTimerExpired = false
-            $0.timeRemaining = $0.duration
-        }
+    // Start timer from expired state
+    viewModel.toggleTimer()
+    XCTAssertTrue(viewModel.isTimerOn)
+    XCTAssertFalse(viewModel.isTimerExpired)
+    XCTAssertEqual(viewModel.timeRemaining, 60) // Should reset to full duration
+  }
 
-        await clock.advance(by: .seconds(1))
+  @MainActor
+  func testTimeFormatting() throws {
+    let mockPreferences = MockUserPreferences()
+    let viewModel = TimerViewModel(timeRemaining: 9932, duration: 9932, userPreferences: mockPreferences)
+    XCTAssertEqual(viewModel.formattedTimeRemaining, "02:45:32")
 
-        await store.receive(.timerTicked) {
-            $0.timeRemaining = 0
-            $0.isTimerOn = false
-            $0.isTimerExpired = true
-        }
+    let viewModel2 = TimerViewModel(timeRemaining: 3661, duration: 3661, userPreferences: mockPreferences)
+    XCTAssertEqual(viewModel2.formattedTimeRemaining, "01:01:01")
 
-        XCTAssertEqual(soundEffectPlayCount.value, 1)
-    }
+    let viewModel3 = TimerViewModel(timeRemaining: 59, duration: 59, userPreferences: mockPreferences)
+    XCTAssertEqual(viewModel3.formattedTimeRemaining, "00:00:59")
+  }
 
-    @MainActor
-    func testTimeFormatting() throws {
-        let clock = TestClock()
+  @MainActor
+  func testDurationChange() throws {
+    let mockPreferences = MockUserPreferences(duration: 60)
+    let viewModel = TimerViewModel(duration: 60, userPreferences: mockPreferences)
 
-        let store = TestStore(initialState: Timer.State(duration: 9932)) {
-            Timer()
-        } withDependencies: {
-            $0.continuousClock = clock
-        }
+    // Change duration
+    viewModel.durationChanged(120)
+    XCTAssertEqual(viewModel.duration, 120)
+    XCTAssertEqual(viewModel.timeRemaining, 120)
+    XCTAssertFalse(viewModel.isTimerOn)
+    XCTAssertFalse(viewModel.isTimerExpired)
 
-        XCTAssertEqual(store.state.formattedTimeRemaining, "02:45:32")
-    }
+    // Verify duration is saved to mock preferences
+    XCTAssertEqual(mockPreferences.duration, 120)
+  }
 
-    @MainActor
-    func testResetExpiredTimer() async throws {
-        let clock = TestClock()
-        let duration = 10
+  @MainActor
+  func testDurationAsDoubleBinding() throws {
+    let mockPreferences = MockUserPreferences(duration: 60)
+    let viewModel = TimerViewModel(duration: 60, userPreferences: mockPreferences)
 
-        // init store in expired state
-        let store = TestStore(initialState: Timer.State(timeRemaining: 0, duration: duration, isTimerExpired: true)) {
-            Timer()
-        } withDependencies: {
-            $0.continuousClock = clock
-        }
+    // Test getter
+    XCTAssertEqual(viewModel.durationAsDouble, 60.0)
 
-        // reset an expired timer
-        await store.send(.resetTimerButtonTapped) {
-            $0.isTimerOn = false
-            $0.isTimerExpired = false
-            $0.timeRemaining = $0.duration
-        }
-    }
-
-    @MainActor
-    func testResetRunningTimer() async throws {
-        let clock = TestClock()
-        let duration = 10
-
-        // init store in expired state
-        let store = TestStore(initialState: Timer.State(timeRemaining: duration, duration: duration)) {
-            Timer()
-        } withDependencies: {
-            $0.continuousClock = clock
-        }
-
-        // start timer
-        await store.send(.toggleTimerButtonTapped) {
-            $0.isTimerOn = true
-            $0.isTimerExpired = false
-            $0.timeRemaining = $0.duration
-        }
-
-        await clock.advance(by: .seconds(1))
-
-        await store.receive(.timerTicked) {
-            $0.timeRemaining = duration - 1
-        }
-
-        // resetting timer also stops it
-        await store.send(.resetTimerButtonTapped) {
-            $0.isTimerOn = false
-            $0.isTimerExpired = false
-            $0.timeRemaining = $0.duration
-        }
-    }
+    // Test setter
+    viewModel.durationAsDouble = 180.0
+    XCTAssertEqual(viewModel.duration, 180)
+    XCTAssertEqual(viewModel.timeRemaining, 180)
+  }
 }

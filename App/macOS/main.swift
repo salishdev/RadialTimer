@@ -1,6 +1,7 @@
 import AppKit
 
 let app = NSApplication.shared
-app.delegate = AppDelegate()
+let delegate = AppDelegate()
+app.delegate = delegate
 app.setActivationPolicy(.accessory)
-_ = NSApplicationMain(CommandLine.argc, CommandLine.unsafeArgv)
+app.run()
