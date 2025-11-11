@@ -64,11 +64,14 @@ targets:
     scheme:
       environmentVariables:
         PATH: PATH=${PATH}:/usr/local/bin
-
       configVariants:
         - Local
         - Dev
         - Prod
+      testTargets:
+        - package: RadialTimer/UserPreferencesTests
+        - package: RadialTimer/TimerFeatureTests
+        - package: RadialTimer/SettingsFeatureTests
 
     info:
       path: ${target_name}/Info.plist
@@ -88,3 +91,36 @@ targets:
         products:
           - SettingsFeature
           - TimerFeature
+
+  # UserPreferencesTests:
+  #   type: bundle.unit-test
+  #   platform: macOS
+  #   deploymentTarget: 14.0
+  #   sources:
+  #     - path: ../Tests/UserPreferencesTests
+  #   dependencies:
+  #     - package: RadialTimer
+  #       products:
+  #         - UserPreferences
+
+  # TimerFeatureTests:
+  #   type: bundle.unit-test
+  #   platform: macOS
+  #   deploymentTarget: 14.0
+  #   sources:
+  #     - path: ../Tests/TimerFeatureTests
+  #   dependencies:
+  #     - package: RadialTimer
+  #       products:
+  #         - TimerFeature
+
+  # SettingsFeatureTests:
+  #   type: bundle.unit-test
+  #   platform: macOS
+  #   deploymentTarget: 14.0
+  #   sources:
+  #     - path: ../Tests/SettingsFeatureTests
+  #   dependencies:
+  #     - package: RadialTimer
+  #       products:
+  #         - SettingsFeature
