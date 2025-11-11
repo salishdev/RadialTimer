@@ -12,7 +12,7 @@ public struct GeneralSettingsView: View {
 
   public var body: some View {
     Form {
-      Section("Sound") {
+      Section {
         Toggle("Play a sound when timer expires", isOn: Binding(
           get: { userPreferences.isSoundEnabled },
           set: { userPreferences.isSoundEnabled = $0 }
@@ -20,9 +20,8 @@ public struct GeneralSettingsView: View {
 
         if userPreferences.isSoundEnabled {
           VStack(alignment: .leading, spacing: 8) {
-            ForEach(TimerSound.allCases.filter { $0.isSystemSound }, id: \.self) { option in
-              soundOptionRow(for: option)
-            }
+            // System sound option
+            systemSoundRow()
 
             // Custom sound option
             customSoundRow()
@@ -57,37 +56,53 @@ public struct GeneralSettingsView: View {
     }
   }
 
+  // MARK: - Computed Properties
+
+  private var isSystemMode: Bool {
+    viewModel.selectedSound != .custom
+  }
+
+  private var selectedSystemSound: Binding<TimerSound> {
+    Binding(
+      get: {
+        if viewModel.selectedSound == .custom {
+          return .glass // Default fallback
+        }
+        return viewModel.selectedSound
+      },
+      set: { newSound in
+        if newSound != .custom {
+          viewModel.selectedSound = newSound
+        }
+      }
+    )
+  }
+
   // MARK: - Helper Views
 
   @ViewBuilder
-  private func customSoundRow() -> some View {
-    let hasCustomSound = userPreferences.customSoundFilename != nil
-    let displayName = hasCustomSound ? (userPreferences.customSoundFilename ?? "Custom") : "Use your own sound..."
-
+  private func systemSoundRow() -> some View {
     HStack {
-      Image(systemName: viewModel.selectedSound == .custom ? "circle.inset.filled" : "circle")
-        .foregroundColor(viewModel.selectedSound == .custom ? .accentColor : .secondary)
+      Image(systemName: isSystemMode ? "circle.inset.filled" : "circle")
+        .foregroundColor(isSystemMode ? .accentColor : .secondary)
         .imageScale(.medium)
 
-      Text(displayName)
+      Text("System")
         .font(.body)
-        .foregroundColor(hasCustomSound ? .primary : .secondary)
 
       Spacer()
 
-      if hasCustomSound {
-        Button(action: {
-          showingFilePicker = true
-        }) {
-          Image(systemName: "folder.badge.plus")
-            .foregroundColor(.secondary)
+      Picker("", selection: selectedSystemSound) {
+        ForEach(TimerSound.allCases.filter { $0.isSystemSound }, id: \.self) { sound in
+          Text(sound.displayName).tag(sound)
         }
-        .buttonStyle(.plain)
-        .help("Change sound")
       }
+      .labelsHidden()
+      .disabled(!isSystemMode)
+      .opacity(isSystemMode ? 1 : 0.5)
 
       Button(action: {
-        if viewModel.selectedSound == .custom {
+        if isSystemMode {
           viewModel.previewSound()
         }
       }) {
@@ -96,14 +111,71 @@ public struct GeneralSettingsView: View {
       }
       .buttonStyle(.plain)
       .help("Preview sound")
-      .disabled(viewModel.selectedSound != .custom || !hasCustomSound)
-      .opacity(viewModel.selectedSound == .custom && hasCustomSound ? 1 : 0.3)
+      .disabled(!isSystemMode)
+      .opacity(isSystemMode ? 1 : 0.3)
     }
     .padding(.vertical, 4)
     .padding(.horizontal, 8)
     .background(
       RoundedRectangle(cornerRadius: 6)
-        .fill(viewModel.selectedSound == .custom ? Color.accentColor.opacity(0.1) : Color.clear)
+        .fill(isSystemMode ? Color.accentColor.opacity(0.1) : Color.clear)
+    )
+    .contentShape(Rectangle())
+    .onTapGesture {
+      if !isSystemMode {
+        // Switch to system mode - default to glass
+        viewModel.selectedSound = .glass
+      }
+    }
+  }
+
+  @ViewBuilder
+  private func customSoundRow() -> some View {
+    let hasCustomSound = userPreferences.customSoundFilename != nil
+    let isCustomMode = !isSystemMode
+    let displayName = hasCustomSound ? (userPreferences.customSoundFilename ?? "Custom") : "Use your own sound..."
+
+    HStack {
+      Image(systemName: isCustomMode ? "circle.inset.filled" : "circle")
+        .foregroundColor(isCustomMode ? .accentColor : .secondary)
+        .imageScale(.medium)
+
+      Text(displayName)
+        .font(.body)
+        .foregroundColor(hasCustomSound ? .primary : .secondary)
+        .opacity(isCustomMode ? 1 : 0.5)
+
+      Spacer()
+
+      Button(action: {
+        showingFilePicker = true
+      }) {
+        Image(systemName: "folder.badge.plus")
+          .foregroundColor(.secondary)
+      }
+      .buttonStyle(.plain)
+      .help("Change sound")
+      .disabled(!isCustomMode)
+      .opacity(isCustomMode ? 1 : 0.3)
+
+      Button(action: {
+        if isCustomMode, hasCustomSound {
+          viewModel.previewSound()
+        }
+      }) {
+        Image(systemName: "speaker.wave.2")
+          .foregroundColor(.secondary)
+      }
+      .buttonStyle(.plain)
+      .help("Preview sound")
+      .disabled(!isCustomMode || !hasCustomSound)
+      .opacity(isCustomMode && hasCustomSound ? 1 : 0.3)
+    }
+    .padding(.vertical, 4)
+    .padding(.horizontal, 8)
+    .background(
+      RoundedRectangle(cornerRadius: 6)
+        .fill(isCustomMode ? Color.accentColor.opacity(0.1) : Color.clear)
     )
     .contentShape(Rectangle())
     .onTapGesture {
@@ -112,43 +184,6 @@ public struct GeneralSettingsView: View {
       } else {
         showingFilePicker = true
       }
-    }
-  }
-
-  @ViewBuilder
-  private func soundOptionRow(for option: TimerSound) -> some View {
-    HStack {
-      Image(systemName: viewModel.selectedSound == option ? "circle.inset.filled" : "circle")
-        .foregroundColor(viewModel.selectedSound == option ? .accentColor : .secondary)
-        .imageScale(.medium)
-
-      Text(option.displayName)
-        .font(.body)
-
-      Spacer()
-
-      Button(action: {
-        if viewModel.selectedSound == option {
-          viewModel.previewSound()
-        }
-      }) {
-        Image(systemName: "speaker.wave.2")
-          .foregroundColor(.secondary)
-      }
-      .buttonStyle(.plain)
-      .help("Preview sound")
-      .disabled(viewModel.selectedSound != option)
-      .opacity(viewModel.selectedSound == option ? 1 : 0.3)
-    }
-    .padding(.vertical, 4)
-    .padding(.horizontal, 8)
-    .background(
-      RoundedRectangle(cornerRadius: 6)
-        .fill(viewModel.selectedSound == option ? Color.accentColor.opacity(0.1) : Color.clear)
-    )
-    .contentShape(Rectangle())
-    .onTapGesture {
-      viewModel.selectedSound = option
     }
   }
 

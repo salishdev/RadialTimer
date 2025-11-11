@@ -1,17 +1,16 @@
 import Cocoa
-import Settings
 import SettingsFeature
 import SwiftUI
 import TimerFeature
 import UserPreferences
 
-class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
-  private var settingsWindowController: SettingsWindowController?
+class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWindowDelegate {
   private var statusBar: NSStatusBar!
   private var statusBarMenu: NSMenu!
   private var contextMenu: NSMenu!
   private var statusItem: NSStatusItem!
   private var isMuted: Bool = false
+  private var settingsWindowController: NSWindowController?
 
   let userPreferences = UserPreferences.shared
   let viewModel: TimerViewModel
@@ -92,7 +91,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     let quitMenuItem = NSMenuItem(
       title: "Quit",
       action: #selector(NSApplication.terminate(_:)),
-      keyEquivalent: "q"
+      keyEquivalent: ""
     )
     contextMenu.addItem(quitMenuItem)
 
@@ -161,27 +160,41 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
   }
 
   func openSettings() {
-    if settingsWindowController == nil {
-      settingsWindowController = SettingsWindowController(
-        panes: [
-          Settings.Pane(
-            identifier: Settings.PaneIdentifier.general,
-            title: "General",
-            toolbarIcon: NSImage(systemSymbolName: "gear", accessibilityDescription: "General settings")!
-          ) {
-            GeneralSettingsView()
-          },
-          Settings.Pane(
-            identifier: Settings.PaneIdentifier.about,
-            title: "About",
-            toolbarIcon: NSImage(systemSymbolName: "info.circle", accessibilityDescription: "About")!
-          ) {
-            AboutView(icon: Image(nsImage: NSApplication.shared.applicationIconImage))
-          },
-        ]
-      )
+    // If a settings window already exists, bring it to front
+    if let controller = settingsWindowController, let window = controller.window {
+      window.makeKeyAndOrderFront(nil)
+      NSApp.activate(ignoringOtherApps: true)
+      return
     }
-    settingsWindowController?.show()
-    settingsWindowController?.window?.orderFrontRegardless()
+
+    // Build the SwiftUI settings view and host it in an NSWindow
+    let settingsRoot = SettingsView()
+      .userPreferences(userPreferences)
+
+    let hostingController = NSHostingController(rootView: settingsRoot)
+
+    let window = NSWindow(
+      contentRect: NSRect(x: 0, y: 0, width: 600, height: 420),
+      styleMask: [.titled, .closable],
+      backing: .buffered,
+      defer: false
+    )
+    window.title = "Settings"
+    window.contentViewController = hostingController
+    window.center()
+    window.isReleasedWhenClosed = false
+    window.delegate = self
+
+    let controller = NSWindowController(window: window)
+    self.settingsWindowController = controller
+
+    controller.showWindow(nil)
+    NSApp.activate(ignoringOtherApps: true)
+  }
+
+  func windowWillClose(_ notification: Notification) {
+    if let window = notification.object as? NSWindow, window == settingsWindowController?.window {
+      settingsWindowController = nil
+    }
   }
 }
